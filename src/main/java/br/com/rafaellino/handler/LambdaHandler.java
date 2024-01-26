@@ -6,11 +6,10 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import software.amazon.awssdk.regions.Region;
+import org.apache.log4j.BasicConfigurator;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,6 +21,11 @@ import java.util.UUID;
 public class LambdaHandler implements RequestHandler<Map<String, Object>, LambdaHandler.CustomResponse> {
 
   private final static String TABLE_NAME = "my-simple-forms";
+
+  static {
+    // necessary to load log4j logger configuration in order to avoid warnings
+    BasicConfigurator.configure();
+  }
 
   @Override
   public CustomResponse handleRequest(final Map<String, Object> input, final Context context) {
