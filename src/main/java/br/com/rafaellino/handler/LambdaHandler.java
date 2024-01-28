@@ -2,11 +2,11 @@ package br.com.rafaellino.handler;
 
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.BasicConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -21,16 +21,10 @@ import java.util.UUID;
 public class LambdaHandler implements RequestHandler<Map<String, Object>, LambdaHandler.CustomResponse> {
 
   private final static String TABLE_NAME = "my-simple-forms";
-
-  static {
-    // necessary to load log4j logger configuration in order to avoid warnings
-    BasicConfigurator.configure();
-  }
+  private static final Logger logger = LoggerFactory.getLogger(LambdaHandler.class);
 
   @Override
   public CustomResponse handleRequest(final Map<String, Object> input, final Context context) {
-
-    LambdaLogger logger = context.getLogger();
     ObjectMapper mapper = new ObjectMapper();
     Map<String, Object> req = null;
 
@@ -40,13 +34,13 @@ public class LambdaHandler implements RequestHandler<Map<String, Object>, Lambda
       throw new RuntimeException(e);
     }
 
-    logger.log("body: " + req.toString());
+    logger.info("body: " + req.toString());
 
     Map<String, AttributeValue> itemToSave = parse(req);
     itemToSave.put("id", AttributeValue.builder().s(UUID.randomUUID().toString()).build());
     itemToSave.put("date", AttributeValue.builder().s(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).toString()).build());
 
-    logger.log("to save: " + itemToSave.toString());
+    logger.info("to save: " + itemToSave.toString());
     try (DynamoDbClient ddb = DynamoDbClient.builder().build()) {
 
       ddb.putItem(PutItemRequest.builder()
@@ -54,10 +48,10 @@ public class LambdaHandler implements RequestHandler<Map<String, Object>, Lambda
           .item(itemToSave).build());
 
     } catch (Exception ex) {
-      logger.log("error: " + ex);
+      logger.info("error: " + ex);
       return new CustomResponse(500, "internal error");
     }
-    logger.log("Success");
+    logger.info("Success");
     return new CustomResponse(201, "posted successfully");
   }
 
