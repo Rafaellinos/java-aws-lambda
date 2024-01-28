@@ -56,6 +56,7 @@ public class LambdaHandler implements RequestHandler<Map<String, Object>, Lambda
   }
 
   private static Map<String, AttributeValue> parse(Map<String, Object> req) {
+    // probably a better way?
     Map<String, AttributeValue> parsedItem = new HashMap<>();
     parsedItem.put("children_not_paying", AttributeValue.builder().s(String.valueOf(req.get("children_not_paying"))).build());
     parsedItem.put("children_pay_full", AttributeValue.builder().s(String.valueOf(req.get("children_pay_full"))).build());
